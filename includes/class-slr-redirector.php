@@ -24,6 +24,7 @@ class SLR_Redirector {
 
         // Admin
         add_action('admin_menu', [$this, 'admin_menu']);
+        add_action('admin_head', [$this, 'admin_styles']);
         add_action('admin_post_slr_add_mapping', [$this, 'admin_add_mapping']);
         add_action('admin_post_slr_delete_mapping', [$this, 'admin_delete_mapping']);
     }
@@ -140,6 +141,33 @@ class SLR_Redirector {
         // 3) fallback: home del idioma (intenta usar prefijo si aplica)
         $fallback = $this->build_fallback_home($target_lang);
         wp_send_json_success(['url' => esc_url_raw($fallback)]);
+    }
+
+    /**
+     * Estilos del panel de mappings, aislados a esta pantalla.
+     */
+    public function admin_styles() {
+        if (!isset($_GET['page']) || 'slr-mappings' !== sanitize_key(wp_unslash($_GET['page']))) {
+            return;
+        }
+        echo '<style>
+            .wrap.slr-admin-wrap { max-width: 1180px; }
+            .slr-admin-wrap h1 { margin: 24px 0; font-size: 26px; font-weight: 650; letter-spacing: -.02em; }
+            .slr-admin-wrap h2 { margin-top: 28px; padding-bottom: 10px; border-bottom: 1px solid #dce3ec; font-size: 17px; }
+            .slr-admin-panel { background: #fff; border: 1px solid #dce3ec; border-radius: 12px; padding: 22px 24px; margin: 18px 0 26px; box-shadow: 0 3px 12px rgba(11,17,32,.04); }
+            .slr-admin-panel .form-table th { width: 170px; padding: 16px 12px 16px 0; }
+            .slr-admin-panel .form-table td { padding: 12px 10px; }
+            .slr-admin-wrap input.regular-text { max-width: 100%; width: 440px; }
+            .slr-admin-wrap input[type=text], .slr-admin-wrap select { min-height: 36px; border-color: #cbd5e1; border-radius: 6px; }
+            .slr-admin-wrap input:focus, .slr-admin-wrap select:focus { border-color: #3B82C4; box-shadow: 0 0 0 1px #3B82C4; }
+            .slr-admin-wrap .button-primary { min-height: 38px; padding: 3px 16px; border-radius: 6px; background: #3B82C4; border-color: #3B82C4; }
+            .slr-admin-wrap .button-primary:hover { background: #286da9; border-color: #286da9; }
+            .slr-admin-wrap .widefat { overflow: hidden; border: 1px solid #dce3ec; border-radius: 8px; }
+            .slr-admin-wrap .widefat thead th { background: #f1f5f9; font-weight: 600; }
+            .slr-admin-wrap .widefat td { vertical-align: middle; padding-top: 12px; padding-bottom: 12px; }
+            .slr-admin-wrap .widefat td:nth-child(2), .slr-admin-wrap .widefat td:nth-child(5) { overflow-wrap: anywhere; }
+            @media(max-width:782px) { .slr-admin-panel { padding: 14px; } .slr-admin-panel .form-table th { width: auto; } }
+        </style>';
     }
 
     /**
