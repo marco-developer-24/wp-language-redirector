@@ -4,6 +4,17 @@ Plugin de WordPress para resolver la URL de destino al cambiar de idioma desde u
 
 > Proyecto específico de integración. Revisá los selectores, idiomas y estructura de URLs de tu sitio antes de instalarlo en producción.
 
+## Contenido
+
+- [Qué hace](#qué-hace)
+- [Requisitos e integración](#requisitos-e-integración)
+- [Instalación](#instalación)
+- [Configurar mappings manuales](#configurar-mappings-manuales)
+- [Checklist de validación](#checklist-de-validación)
+- [Limitaciones conocidas](#limitaciones-conocidas)
+- [Seguridad y producción](#seguridad-y-producción)
+- [Licencia](#licencia)
+
 ## Qué hace
 
 Cuando un visitante hace clic en un enlace de idioma compatible, el JavaScript del plugin consulta WordPress mediante AJAX para obtener el destino. La resolución sigue este orden:
