@@ -1,6 +1,6 @@
 <div align="center">
 
-# Schefferlii Language Redirector
+# WP Language Redirector
 
 **WordPress language destination resolver for WP Multilang-compatible selectors.**
 
@@ -53,7 +53,7 @@ El ID y el tipo del contenido actual son opcionales: el script intenta leerlos d
 
 1. Descargá o cloná este repositorio.
 2. Copiá la carpeta del plugin en `wp-content/plugins/`.
-3. Activá **Schefferlii Language Redirector** desde el administrador de WordPress.
+3. Activá **WP Language Redirector** desde el administrador de WordPress.
 4. Confirmá que el selector de idiomas utiliza uno de los selectores compatibles.
 5. Probá el cambio de idioma en páginas, entradas y categorías que tengan traducciones.
 
