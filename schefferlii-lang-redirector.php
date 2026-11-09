@@ -1,9 +1,9 @@
 <?php
 /**
- * Plugin Name: Schefferlii Language Redirector
+ * Plugin Name: WP Language Redirector
  * Description: Mappings por idioma + fallback con WP Multilang. Intercepta el click en #wpm-languages y redirige a la URL definida.
  * Version: 1.0.0
- * Author: Schefferlii Dev
+ * Author: Marco Rubino
  * Text Domain: schefferlii-lang-redirector
  */
 
