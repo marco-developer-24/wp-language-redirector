@@ -1,4 +1,14 @@
+<div align="center">
+
 # Schefferlii Language Redirector
+
+**WordPress language destination resolver for WP Multilang-compatible selectors.**
+
+<img src="https://img.shields.io/badge/Platform-WordPress-21759B?logo=wordpress&logoColor=white" alt="WordPress" />
+<img src="https://img.shields.io/badge/Integration-WP%20Multilang-4B5563" alt="WP Multilang integration" />
+<img src="https://img.shields.io/badge/Status-Specific%20integration-64748B" alt="Specific integration" />
+
+</div>
 
 Plugin de WordPress para resolver la URL de destino al cambiar de idioma desde un selector compatible con WP Multilang. Permite definir mappings manuales y utiliza helpers de WP Multilang cuando están disponibles.
 
