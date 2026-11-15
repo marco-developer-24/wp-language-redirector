@@ -230,6 +230,7 @@ class SLR_Redirector {
             </div>
 
             <h2>Mappings existentes</h2>
+            <div class="slr-admin-panel">
             <table class="widefat striped">
                 <thead><tr>
                     <th>ID</th><th>Source</th><th>Source Lang</th><th>Target Lang</th><th>Target URL</th><th>Activo</th><th>Acciones</th>
@@ -257,6 +258,7 @@ class SLR_Redirector {
                 <?php endif; ?>
                 </tbody>
             </table>
+            </div>
         </div>
         <?php
     }
