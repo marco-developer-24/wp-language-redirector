@@ -26,6 +26,7 @@ class SLR_Redirector {
         add_action('admin_menu', [$this, 'admin_menu']);
         add_action('admin_head', [$this, 'admin_styles']);
         add_action('admin_post_slr_add_mapping', [$this, 'admin_add_mapping']);
+        add_action('admin_post_slr_toggle_mapping', [$this, 'admin_toggle_mapping']);
         add_action('admin_post_slr_delete_mapping', [$this, 'admin_delete_mapping']);
     }
 
@@ -196,6 +197,12 @@ class SLR_Redirector {
         <div class="wrap slr-admin-wrap">
             <h1>SLR - Language Mappings</h1>
 
+            <?php if (isset($_GET['slr_notice']) && 'updated' === sanitize_key(wp_unslash($_GET['slr_notice']))): ?>
+                <div class="notice notice-success is-dismissible"><p><?php esc_html_e('Estado del mapping actualizado.', 'schefferlii-lang-redirector'); ?></p></div>
+            <?php elseif (isset($_GET['slr_notice']) && 'error' === sanitize_key(wp_unslash($_GET['slr_notice']))): ?>
+                <div class="notice notice-error"><p><?php esc_html_e('No se pudo actualizar el estado del mapping.', 'schefferlii-lang-redirector'); ?></p></div>
+            <?php endif; ?>
+
             <h2>Añadir mapping</h2>
             <div class="slr-admin-panel">
             <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
@@ -251,6 +258,12 @@ class SLR_Redirector {
                         <td><span class="slr-status-tag <?php echo $m->active ? 'is-active' : 'is-inactive'; ?>"><?php echo $m->active ? 'Activo' : 'Inactivo'; ?></span></td>
                         <td>
                             <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" style="display:inline;">
+                                <?php wp_nonce_field('slr_toggle_mapping_' . intval($m->id)); ?>
+                                <input type="hidden" name="action" value="slr_toggle_mapping">
+                                <input type="hidden" name="id" value="<?php echo intval($m->id); ?>">
+                                <?php submit_button($m->active ? 'Desactivar' : 'Activar', 'small', 'submit', false); ?>
+                            </form>
+                            <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" style="display:inline;">
                                 <?php wp_nonce_field('slr_delete_mapping'); ?>
                                 <input type="hidden" name="action" value="slr_delete_mapping">
                                 <input type="hidden" name="id" value="<?php echo intval($m->id); ?>">
@@ -302,6 +315,47 @@ class SLR_Redirector {
         ], ['%s','%d','%s','%s','%s','%s','%d','%d']);
 
         wp_redirect(admin_url('options-general.php?page=slr-mappings'));
+        exit;
+    }
+
+    /**
+     * Alterna el estado de un mapping existente.
+     */
+    public function admin_toggle_mapping() {
+        if (!current_user_can('manage_options')) {
+            wp_die('No autorizado');
+        }
+
+        $id = isset($_POST['id']) ? absint($_POST['id']) : 0;
+        if (!$id) {
+            wp_safe_redirect(add_query_arg('slr_notice', 'error', admin_url('options-general.php?page=slr-mappings')));
+            exit;
+        }
+
+        check_admin_referer('slr_toggle_mapping_' . $id);
+
+        global $wpdb;
+        $current_status = $wpdb->get_var($wpdb->prepare(
+            "SELECT active FROM {$this->table} WHERE id = %d",
+            $id
+        ));
+
+        if (null === $current_status) {
+            wp_safe_redirect(add_query_arg('slr_notice', 'error', admin_url('options-general.php?page=slr-mappings')));
+            exit;
+        }
+
+        $new_status = (int) !$current_status;
+        $updated = $wpdb->update(
+            $this->table,
+            ['active' => $new_status],
+            ['id' => $id],
+            ['%d'],
+            ['%d']
+        );
+
+        $notice = false === $updated ? 'error' : 'updated';
+        wp_safe_redirect(add_query_arg('slr_notice', $notice, admin_url('options-general.php?page=slr-mappings')));
         exit;
     }
 
