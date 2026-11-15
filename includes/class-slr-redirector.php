@@ -153,7 +153,19 @@ class SLR_Redirector {
         }
         echo '<style>
             .wrap.slr-admin-wrap { max-width: 1180px; }
-            .slr-admin-wrap h1 { margin: 24px 0; font-size: 26px; font-weight: 650; letter-spacing: -.02em; }
+            .slr-admin-header { display:flex; align-items:flex-end; justify-content:space-between; gap:20px; margin:24px 0 22px; padding:28px 30px; border:1px solid #173b63; border-radius:14px; background:linear-gradient(120deg,#102a43 0%,#17466f 62%,#23649a 100%); color:#fff; box-shadow:0 8px 24px rgba(15,42,67,.14); }
+            .slr-admin-eyebrow { margin:0 0 8px; color:#b9d8f2; font-size:11px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; }
+            .slr-admin-header h1 { margin:0 0 7px; color:#fff; font-size:27px; font-weight:650; letter-spacing:-.025em; line-height:1.2; }
+            .slr-admin-description { margin:0; color:#d7e7f5; font-size:13px; }
+            .slr-admin-version { flex:0 0 auto; padding:7px 11px; border:1px solid rgba(255,255,255,.24); border-radius:999px; background:rgba(255,255,255,.1); color:#fff; font-size:12px; font-weight:600; }
+            .slr-admin-stats { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; margin:0 0 26px; }
+            .slr-admin-stat { min-width:0; padding:19px 21px; border:1px solid #dce3ec; border-radius:11px; background:#fff; box-shadow:0 2px 8px rgba(11,17,32,.035); }
+            .slr-admin-stat-label { display:block; margin-bottom:8px; color:#64748b; font-size:12px; font-weight:600; }
+            .slr-admin-stat-value { display:block; color:#172b43; font-size:27px; font-weight:700; line-height:1.1; letter-spacing:-.03em; font-variant-numeric:tabular-nums; }
+            .slr-admin-stat-note { display:block; margin-top:6px; color:#8492a6; font-size:11px; }
+            .slr-admin-stat.is-active .slr-admin-stat-value { color:#16804a; }
+            .slr-admin-stat.is-inactive .slr-admin-stat-value { color:#64748b; }
+            .slr-admin-wrap h2 { margin-top: 28px; padding-bottom: 10px; border-bottom: 1px solid #dce3ec; font-size: 17px; }
             .slr-admin-wrap h2 { margin-top: 28px; padding-bottom: 10px; border-bottom: 1px solid #dce3ec; font-size: 17px; }
             .slr-admin-panel { background: #fff; border: 1px solid #dce3ec; border-radius: 12px; padding: 22px 24px; margin: 18px 0 26px; box-shadow: 0 3px 12px rgba(11,17,32,.04); }
             .slr-admin-panel .form-table th { width: 170px; padding: 16px 12px 16px 0; }
@@ -172,7 +184,7 @@ class SLR_Redirector {
             .slr-admin-wrap .slr-status-tag.is-active { border-color: #b7e4c7; background: #edf8f0; color: #176b36; }
             .slr-admin-wrap .slr-status-tag.is-inactive { border-color: #d8dee8; background: #f3f4f6; color: #596579; }
             .slr-admin-wrap .widefat td:nth-child(2), .slr-admin-wrap .widefat td:nth-child(5) { overflow-wrap: anywhere; }
-            @media(max-width:782px) { .slr-admin-panel { padding: 14px; } .slr-admin-panel .form-table th { width: auto; } }
+            @media(max-width:782px) { .slr-admin-panel { padding: 14px; } .slr-admin-panel .form-table th { width: auto; } .slr-admin-header { align-items:flex-start; flex-direction:column; padding:22px; } .slr-admin-stats { grid-template-columns:1fr; gap:10px; } .slr-admin-stat { padding:15px 17px; } }
         </style>';
     }
 
@@ -192,10 +204,38 @@ class SLR_Redirector {
         global $wpdb;
         $table = $this->table;
         $mappings = $wpdb->get_results("SELECT * FROM {$table} ORDER BY created DESC LIMIT 200");
+        $total_mappings = (int) $wpdb->get_var("SELECT COUNT(*) FROM {$table}");
+        $active_mappings = (int) $wpdb->get_var("SELECT COUNT(*) FROM {$table} WHERE active = 1");
+        $inactive_mappings = (int) $wpdb->get_var("SELECT COUNT(*) FROM {$table} WHERE active = 0");
 
         ?>
         <div class="wrap slr-admin-wrap">
-            <h1>SLR - Language Mappings</h1>
+            <header class="slr-admin-header">
+                <div>
+                    <p class="slr-admin-eyebrow">WP Language Redirector · Administration</p>
+                    <h1>Language mappings</h1>
+                    <p class="slr-admin-description">Manage language destinations and control which mapping rules are used.</p>
+                </div>
+                <span class="slr-admin-version">Version <?php echo esc_html(SLR_VERSION); ?></span>
+            </header>
+
+            <section class="slr-admin-stats" aria-label="Mapping overview">
+                <div class="slr-admin-stat">
+                    <span class="slr-admin-stat-label">Total mappings</span>
+                    <strong class="slr-admin-stat-value"><?php echo esc_html(number_format_i18n($total_mappings)); ?></strong>
+                    <span class="slr-admin-stat-note">All saved rules</span>
+                </div>
+                <div class="slr-admin-stat is-active">
+                    <span class="slr-admin-stat-label">Active</span>
+                    <strong class="slr-admin-stat-value"><?php echo esc_html(number_format_i18n($active_mappings)); ?></strong>
+                    <span class="slr-admin-stat-note">Available to the redirect resolver</span>
+                </div>
+                <div class="slr-admin-stat is-inactive">
+                    <span class="slr-admin-stat-label">Inactive</span>
+                    <strong class="slr-admin-stat-value"><?php echo esc_html(number_format_i18n($inactive_mappings)); ?></strong>
+                    <span class="slr-admin-stat-note">Saved but not used for redirects</span>
+                </div>
+            </section>
 
             <?php if (isset($_GET['slr_notice']) && 'updated' === sanitize_key(wp_unslash($_GET['slr_notice']))): ?>
                 <div class="notice notice-success is-dismissible"><p><?php esc_html_e('Estado del mapping actualizado.', 'schefferlii-lang-redirector'); ?></p></div>
