@@ -192,6 +192,7 @@ class SLR_Redirector {
             <h1>SLR - Language Mappings</h1>
 
             <h2>Añadir mapping</h2>
+            <div class="slr-admin-panel">
             <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
                 <?php wp_nonce_field('slr_add_mapping'); ?>
                 <input type="hidden" name="action" value="slr_add_mapping">
@@ -226,6 +227,7 @@ class SLR_Redirector {
                 </table>
                 <?php submit_button('Añadir mapping'); ?>
             </form>
+            </div>
 
             <h2>Mappings existentes</h2>
             <table class="widefat striped">
