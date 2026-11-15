@@ -166,6 +166,7 @@ class SLR_Redirector {
             .slr-admin-wrap .widefat thead th { background: #f1f5f9; font-weight: 600; }
             .slr-admin-wrap .widefat td { vertical-align: middle; padding-top: 12px; padding-bottom: 12px; }
             .slr-admin-wrap .slr-url-cell { max-width: 300px; overflow-wrap: anywhere; }
+            .slr-admin-wrap .slr-language-tag { display: inline-block; min-width: 2.2em; padding: 4px 8px; border: 1px solid #d6e4f2; border-radius: 6px; background: #eff6fc; color: #245b89; font-size: 12px; font-weight: 600; line-height: 1.2; text-align: center; text-transform: uppercase; }
             .slr-admin-wrap .widefat td:nth-child(2), .slr-admin-wrap .widefat td:nth-child(5) { overflow-wrap: anywhere; }
             @media(max-width:782px) { .slr-admin-panel { padding: 14px; } .slr-admin-panel .form-table th { width: auto; } }
         </style>';
@@ -241,8 +242,8 @@ class SLR_Redirector {
                     <tr>
                         <td><?php echo intval($m->id); ?></td>
                         <td class="slr-url-cell"><?php echo esc_html($m->source_url ?: $m->source_id); ?></td>
-                        <td><?php echo esc_html($m->source_lang); ?></td>
-                        <td><?php echo esc_html($m->target_lang); ?></td>
+                        <td><span class="slr-language-tag"><?php echo esc_html($m->source_lang); ?></span></td>
+                        <td><span class="slr-language-tag"><?php echo esc_html($m->target_lang); ?></span></td>
                         <td class="slr-url-cell"><?php echo esc_url($m->target_url); ?></td>
                         <td><?php echo $m->active ? 'Sí' : 'No'; ?></td>
                         <td>
