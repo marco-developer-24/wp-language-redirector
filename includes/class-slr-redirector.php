@@ -167,6 +167,9 @@ class SLR_Redirector {
             .slr-admin-wrap .widefat td { vertical-align: middle; padding-top: 12px; padding-bottom: 12px; }
             .slr-admin-wrap .slr-url-cell { max-width: 300px; overflow-wrap: anywhere; }
             .slr-admin-wrap .slr-language-tag { display: inline-block; min-width: 2.2em; padding: 4px 8px; border: 1px solid #d6e4f2; border-radius: 6px; background: #eff6fc; color: #245b89; font-size: 12px; font-weight: 600; line-height: 1.2; text-align: center; text-transform: uppercase; }
+            .slr-admin-wrap .slr-status-tag { display: inline-block; padding: 4px 9px; border: 1px solid transparent; border-radius: 999px; font-size: 12px; font-weight: 600; line-height: 1.2; }
+            .slr-admin-wrap .slr-status-tag.is-active { border-color: #b7e4c7; background: #edf8f0; color: #176b36; }
+            .slr-admin-wrap .slr-status-tag.is-inactive { border-color: #d8dee8; background: #f3f4f6; color: #596579; }
             .slr-admin-wrap .widefat td:nth-child(2), .slr-admin-wrap .widefat td:nth-child(5) { overflow-wrap: anywhere; }
             @media(max-width:782px) { .slr-admin-panel { padding: 14px; } .slr-admin-panel .form-table th { width: auto; } }
         </style>';
@@ -245,7 +248,7 @@ class SLR_Redirector {
                         <td><span class="slr-language-tag"><?php echo esc_html($m->source_lang); ?></span></td>
                         <td><span class="slr-language-tag"><?php echo esc_html($m->target_lang); ?></span></td>
                         <td class="slr-url-cell"><?php echo esc_url($m->target_url); ?></td>
-                        <td><?php echo $m->active ? 'Sí' : 'No'; ?></td>
+                        <td><span class="slr-status-tag <?php echo $m->active ? 'is-active' : 'is-inactive'; ?>"><?php echo $m->active ? 'Activo' : 'Inactivo'; ?></span></td>
                         <td>
                             <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" style="display:inline;">
                                 <?php wp_nonce_field('slr_delete_mapping'); ?>
