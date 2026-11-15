@@ -165,6 +165,7 @@ class SLR_Redirector {
             .slr-admin-wrap .widefat { overflow: hidden; border: 1px solid #dce3ec; border-radius: 8px; }
             .slr-admin-wrap .widefat thead th { background: #f1f5f9; font-weight: 600; }
             .slr-admin-wrap .widefat td { vertical-align: middle; padding-top: 12px; padding-bottom: 12px; }
+            .slr-admin-wrap .slr-url-cell { max-width: 300px; overflow-wrap: anywhere; }
             .slr-admin-wrap .widefat td:nth-child(2), .slr-admin-wrap .widefat td:nth-child(5) { overflow-wrap: anywhere; }
             @media(max-width:782px) { .slr-admin-panel { padding: 14px; } .slr-admin-panel .form-table th { width: auto; } }
         </style>';
@@ -239,10 +240,10 @@ class SLR_Redirector {
                 <?php if ($mappings): foreach($mappings as $m): ?>
                     <tr>
                         <td><?php echo intval($m->id); ?></td>
-                        <td style="max-width:300px;word-break:break-all;"><?php echo esc_html($m->source_url ?: $m->source_id); ?></td>
+                        <td class="slr-url-cell"><?php echo esc_html($m->source_url ?: $m->source_id); ?></td>
                         <td><?php echo esc_html($m->source_lang); ?></td>
                         <td><?php echo esc_html($m->target_lang); ?></td>
-                        <td style="max-width:300px;word-break:break-all;"><?php echo esc_url($m->target_url); ?></td>
+                        <td class="slr-url-cell"><?php echo esc_url($m->target_url); ?></td>
                         <td><?php echo $m->active ? 'Sí' : 'No'; ?></td>
                         <td>
                             <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" style="display:inline;">
