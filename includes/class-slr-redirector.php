@@ -188,7 +188,7 @@ class SLR_Redirector {
         $mappings = $wpdb->get_results("SELECT * FROM {$table} ORDER BY created DESC LIMIT 200");
 
         ?>
-        <div class="wrap">
+        <div class="wrap slr-admin-wrap">
             <h1>SLR - Language Mappings</h1>
 
             <h2>Añadir mapping</h2>
