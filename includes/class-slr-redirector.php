@@ -24,6 +24,7 @@ class SLR_Redirector {
 
         // Admin
         add_action('admin_menu', [$this, 'admin_menu']);
+        add_action('admin_post_slr_clear_logs', [$this, 'admin_clear_logs']);
         add_action('admin_head', [$this, 'admin_styles']);
         add_action('admin_post_slr_add_mapping', [$this, 'admin_add_mapping']);
         add_action('admin_post_slr_toggle_mapping', [$this, 'admin_toggle_mapping']);
@@ -37,6 +38,25 @@ class SLR_Redirector {
         global $wpdb;
         $table = $wpdb->prefix . 'slr_lang_map';
         $charset_collate = $wpdb->get_charset_collate();
+
+        $logs_table = $wpdb->prefix . 'slr_redirect_logs';
+        $logs_sql = "CREATE TABLE {$logs_table} (
+            id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+            event_type VARCHAR(64) NOT NULL,
+            severity VARCHAR(16) NOT NULL DEFAULT 'warning',
+            source_url VARCHAR(255) DEFAULT NULL,
+            source_lang VARCHAR(10) DEFAULT NULL,
+            target_lang VARCHAR(10) DEFAULT NULL,
+            target_url VARCHAR(255) DEFAULT NULL,
+            details TEXT DEFAULT NULL,
+            created DATETIME DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (id),
+            INDEX created_idx (created),
+            INDEX severity_idx (severity)
+        ) {$charset_collate};";
+
+        require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+        dbDelta($logs_sql);
 
         $sql = "CREATE TABLE {$table} (
             id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -54,7 +74,6 @@ class SLR_Redirector {
             INDEX url_idx (source_url(191))
         ) {$charset_collate};";
 
-        require_once ABSPATH . 'wp-admin/includes/upgrade.php';
         dbDelta($sql);
     }
 
@@ -91,7 +110,12 @@ class SLR_Redirector {
         $object_type   = isset($_POST['object_type']) ? sanitize_text_field($_POST['object_type']) : '';
 
         if (empty($target_lang)) {
+            $this->log_event('missing_target_language', 'warning', $current_url, $source_lang, '', '', 'El selector no proporcionó un idioma destino.');
             wp_send_json_error(['message' => 'missing lang']);
+        }
+
+        if (empty($source_lang)) {
+            $this->log_event('source_language_unknown', 'warning', $current_url, '', $target_lang, '', 'No se pudo determinar el idioma de origen a partir de la URL frontend.');
         }
 
         // 1) intentar encontrar mapping en tabla por object_id
@@ -140,7 +164,17 @@ class SLR_Redirector {
             }
         }
 
-        // No inventar un destino si no se encontró una traducción verificable.
+        // Registrar la resolución fallida sin almacenar parámetros de URL.
+        $this->log_event(
+            'translation_not_found',
+            'warning',
+            $current_url,
+            $source_lang,
+            $target_lang,
+            '',
+            $object_id ? 'No se encontró mapping ni traducción para el objeto solicitado.' : 'No se encontró mapping ni traducción; no se recibió un ID de objeto.'
+        );
+
         wp_send_json_error([
             'code' => 'translation_not_found',
             'message' => 'No se encontró un destino para el idioma solicitado.',
@@ -231,6 +265,119 @@ class SLR_Redirector {
      */
     public function admin_menu() {
         add_options_page('SLR - Mappings', 'SLR Mappings', 'manage_options', 'slr-mappings', [$this, 'admin_page']);
+        add_submenu_page('options-general.php', 'SLR Diagnostics', 'SLR Diagnostics', 'manage_options', 'slr-diagnostics', [$this, 'admin_diagnostics_page']);
+    }
+
+    /**
+     * Registra advertencias de resolución sin guardar query strings ni fragmentos.
+     */
+    private function log_event($event_type, $severity, $source_url, $source_lang, $target_lang, $target_url, $details) {
+        global $wpdb;
+
+        $logs_table = $wpdb->prefix . 'slr_redirect_logs';
+        $wpdb->insert($logs_table, [
+            'event_type' => sanitize_key($event_type),
+            'severity' => sanitize_key($severity),
+            'source_url' => $this->sanitize_log_url($source_url),
+            'source_lang' => sanitize_text_field($source_lang),
+            'target_lang' => sanitize_text_field($target_lang),
+            'target_url' => $this->sanitize_log_url($target_url),
+            'details' => sanitize_textarea_field($details),
+            'created' => current_time('mysql'),
+        ], ['%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s']);
+
+        // Retención: 30 días y un máximo aproximado de 500 eventos.
+        $wpdb->query("DELETE FROM {$logs_table} WHERE created < DATE_SUB(NOW(), INTERVAL 30 DAY)");
+        $wpdb->query("DELETE FROM {$logs_table} WHERE id NOT IN (SELECT id FROM (SELECT id FROM {$logs_table} ORDER BY id DESC LIMIT 500) AS recent_logs)");
+    }
+
+    /**
+     * Guarda solo host y ruta para evitar persistir tokens u otros parámetros sensibles.
+     */
+    private function sanitize_log_url($url) {
+        if (empty($url)) {
+            return '';
+        }
+
+        $parsed = wp_parse_url($url);
+        if (!$parsed || empty($parsed['host'])) {
+            return '';
+        }
+
+        $scheme = isset($parsed['scheme']) ? $parsed['scheme'] . '://' : '';
+        $path = isset($parsed['path']) ? $parsed['path'] : '/';
+
+        return esc_url_raw($scheme . $parsed['host'] . $path);
+    }
+
+    /**
+     * Pantalla de diagnóstico de eventos anómalos.
+     */
+    public function admin_diagnostics_page() {
+        if (!current_user_can('manage_options')) {
+            wp_die('No autorizado');
+        }
+
+        global $wpdb;
+        $logs_table = $wpdb->prefix . 'slr_redirect_logs';
+        $logs = $wpdb->get_results("SELECT * FROM {$logs_table} ORDER BY created DESC, id DESC LIMIT 100");
+        $total_logs = (int) $wpdb->get_var("SELECT COUNT(*) FROM {$logs_table}");
+        $warning_logs = (int) $wpdb->get_var("SELECT COUNT(*) FROM {$logs_table} WHERE severity = 'warning'");
+
+        ?>
+        <div class="wrap">
+            <h1>SLR Diagnostics</h1>
+            <p>Advertencias de resolución de idioma. Se conservan hasta 30 días, con un máximo de 500 eventos.</p>
+            <p><strong><?php echo esc_html(number_format_i18n($total_logs)); ?></strong> eventos registrados ·
+                <strong><?php echo esc_html(number_format_i18n($warning_logs)); ?></strong> advertencias</p>
+
+            <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" style="margin: 16px 0;">
+                <?php wp_nonce_field('slr_clear_logs'); ?>
+                <input type="hidden" name="action" value="slr_clear_logs">
+                <?php submit_button('Limpiar registros', 'secondary', 'submit', false); ?>
+            </form>
+
+            <table class="widefat striped">
+                <thead>
+                    <tr>
+                        <th>Fecha</th><th>Evento</th><th>Origen</th><th>Idioma</th><th>Destino</th><th>Detalle</th>
+                    </tr>
+                </thead>
+                <tbody>
+                <?php if ($logs): foreach ($logs as $log): ?>
+                    <tr>
+                        <td><?php echo esc_html($log->created); ?></td>
+                        <td><strong><?php echo esc_html($log->event_type); ?></strong><br><span class="description"><?php echo esc_html($log->severity); ?></span></td>
+                        <td style="max-width:260px;overflow-wrap:anywhere;"><?php echo esc_html($log->source_url); ?></td>
+                        <td><?php echo esc_html($log->source_lang ?: '—'); ?> → <?php echo esc_html($log->target_lang ?: '—'); ?></td>
+                        <td style="max-width:260px;overflow-wrap:anywhere;"><?php echo esc_html($log->target_url ?: '—'); ?></td>
+                        <td><?php echo esc_html($log->details); ?></td>
+                    </tr>
+                <?php endforeach; else: ?>
+                    <tr><td colspan="6">Todavía no hay eventos registrados.</td></tr>
+                <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
+        <?php
+    }
+
+    /**
+     * Elimina los registros mediante una acción protegida por capability y nonce.
+     */
+    public function admin_clear_logs() {
+        if (!current_user_can('manage_options')) {
+            wp_die('No autorizado');
+        }
+
+        check_admin_referer('slr_clear_logs');
+
+        global $wpdb;
+        $logs_table = $wpdb->prefix . 'slr_redirect_logs';
+        $wpdb->query("TRUNCATE TABLE {$logs_table}");
+
+        wp_safe_redirect(admin_url('options-general.php?page=slr-diagnostics'));
+        exit;
     }
 
     /**
