@@ -46,6 +46,8 @@ class SLR_Redirector {
         $logs_sql = "CREATE TABLE {$logs_table} (
             id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
             event_type VARCHAR(64) NOT NULL,
+            request_id CHAR(36) NOT NULL DEFAULT '',
+            resolution_method VARCHAR(32) NOT NULL DEFAULT '',
             severity VARCHAR(16) NOT NULL DEFAULT 'warning',
             source_url VARCHAR(255) DEFAULT NULL,
             source_lang VARCHAR(10) DEFAULT NULL,
@@ -55,12 +57,13 @@ class SLR_Redirector {
             created DATETIME DEFAULT CURRENT_TIMESTAMP,
             PRIMARY KEY (id),
             INDEX created_idx (created),
-            INDEX severity_idx (severity)
+            INDEX severity_idx (severity),
+            INDEX request_idx (request_id)
         ) {$charset_collate};";
 
         require_once ABSPATH . 'wp-admin/includes/upgrade.php';
         dbDelta($logs_sql);
-        update_option('slr_logs_db_version', '1');
+        update_option('slr_logs_db_version', '2');
 
         $sql = "CREATE TABLE {$table} (
             id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -85,7 +88,7 @@ class SLR_Redirector {
      * Crea la tabla de diagnósticos en instalaciones existentes tras actualizar el plugin.
      */
     public function maybe_create_logs_table() {
-        if ('1' === get_option('slr_logs_db_version')) {
+        if ('2' === get_option('slr_logs_db_version')) {
             return;
         }
 
@@ -96,6 +99,8 @@ class SLR_Redirector {
         $sql = "CREATE TABLE {$logs_table} (
             id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
             event_type VARCHAR(64) NOT NULL,
+            request_id CHAR(36) NOT NULL DEFAULT '',
+            resolution_method VARCHAR(32) NOT NULL DEFAULT '',
             severity VARCHAR(16) NOT NULL DEFAULT 'warning',
             source_url VARCHAR(255) DEFAULT NULL,
             source_lang VARCHAR(10) DEFAULT NULL,
@@ -105,12 +110,13 @@ class SLR_Redirector {
             created DATETIME DEFAULT CURRENT_TIMESTAMP,
             PRIMARY KEY (id),
             INDEX created_idx (created),
-            INDEX severity_idx (severity)
+            INDEX severity_idx (severity),
+            INDEX request_idx (request_id)
         ) {$charset_collate};";
 
         require_once ABSPATH . 'wp-admin/includes/upgrade.php';
         dbDelta($sql);
-        update_option('slr_logs_db_version', '1');
+        update_option('slr_logs_db_version', '2');
     }
 
     public static function deactivate() {
@@ -137,21 +143,39 @@ class SLR_Redirector {
      * 3) registra una advertencia si no se encuentra destino
      */
     public function ajax_get_redirect() {
-        check_ajax_referer('slr_nonce', 'nonce');
+        $request_id = wp_generate_uuid4();
+        $current_url = isset($_POST['url']) ? esc_url_raw(wp_unslash($_POST['url'])) : '';
+        $source_lang = $this->detect_language_from_url($current_url);
 
-        $target_lang   = isset($_POST['lang']) ? sanitize_text_field($_POST['lang']) : '';
-        $current_url   = isset($_POST['url']) ? esc_url_raw($_POST['url']) : '';
-        $source_lang   = $this->detect_language_from_url($current_url);
-        $object_id     = isset($_POST['object_id']) ? intval($_POST['object_id']) : 0;
-        $object_type   = isset($_POST['object_type']) ? sanitize_text_field($_POST['object_type']) : '';
+        if (!check_ajax_referer('slr_nonce', 'nonce', false)) {
+            $this->log_event('invalid_nonce', 'error', $current_url, $source_lang, '', '', 'La solicitud AJAX no superó la validación del nonce.', $request_id, 'request_validation');
+            wp_send_json_error([
+                'code' => 'invalid_nonce',
+                'message' => 'La solicitud de cambio de idioma expiró o no es válida.',
+                'request_id' => $request_id,
+            ], 403);
+        }
+
+        $target_lang = isset($_POST['lang']) ? sanitize_key(wp_unslash($_POST['lang'])) : '';
+        $object_id = isset($_POST['object_id']) ? absint($_POST['object_id']) : 0;
+        $object_type = isset($_POST['object_type']) ? sanitize_key(wp_unslash($_POST['object_type'])) : '';
 
         if (empty($target_lang)) {
-            $this->log_event('missing_target_language', 'warning', $current_url, $source_lang, '', '', 'El selector no proporcionó un idioma destino.');
-            wp_send_json_error(['message' => 'missing lang']);
+            $this->log_event('missing_target_language', 'warning', $current_url, $source_lang, '', '', 'El selector no proporcionó un idioma destino.', $request_id, 'request_validation');
+            wp_send_json_error([
+                'code' => 'missing_target_language',
+                'message' => 'El selector no proporcionó un idioma destino.',
+                'request_id' => $request_id,
+            ], 422);
         }
 
         if (empty($source_lang)) {
-            $this->log_event('source_language_unknown', 'warning', $current_url, '', $target_lang, '', 'No se pudo determinar el idioma de origen a partir de la URL frontend.');
+            $this->log_event('source_language_unknown', 'warning', $current_url, '', $target_lang, '', 'No se pudo determinar el idioma de origen a partir de la URL frontend.', $request_id, 'language_detection');
+            wp_send_json_error([
+                'code' => 'source_language_unknown',
+                'message' => 'No se pudo identificar el idioma de la página actual. Se conserva el enlace original.',
+                'request_id' => $request_id,
+            ], 422);
         }
 
         // 1) intentar encontrar mapping en tabla por object_id
@@ -208,13 +232,16 @@ class SLR_Redirector {
             $source_lang,
             $target_lang,
             '',
-            $object_id ? 'No se encontró mapping ni traducción para el objeto solicitado.' : 'No se encontró mapping ni traducción; no se recibió un ID de objeto.'
+            $object_id ? 'No se encontró mapping ni traducción para el objeto solicitado.' : 'No se encontró mapping ni traducción; no se recibió un ID de objeto.',
+            $request_id,
+            'translation_lookup'
         );
 
         wp_send_json_error([
             'code' => 'translation_not_found',
             'message' => 'No se encontró un destino para el idioma solicitado.',
-        ]);
+            'request_id' => $request_id,
+        ], 404);
     }
 
     /**
@@ -307,12 +334,14 @@ class SLR_Redirector {
     /**
      * Registra advertencias de resolución sin guardar query strings ni fragmentos.
      */
-    private function log_event($event_type, $severity, $source_url, $source_lang, $target_lang, $target_url, $details) {
+    private function log_event($event_type, $severity, $source_url, $source_lang, $target_lang, $target_url, $details, $request_id = '', $resolution_method = '') {
         global $wpdb;
 
         $logs_table = $wpdb->prefix . 'slr_redirect_logs';
         $wpdb->insert($logs_table, [
             'event_type' => sanitize_key($event_type),
+            'request_id' => sanitize_text_field($request_id),
+            'resolution_method' => sanitize_key($resolution_method),
             'severity' => sanitize_key($severity),
             'source_url' => $this->sanitize_log_url($source_url),
             'source_lang' => sanitize_text_field($source_lang),
@@ -320,7 +349,7 @@ class SLR_Redirector {
             'target_url' => $this->sanitize_log_url($target_url),
             'details' => sanitize_textarea_field($details),
             'created' => current_time('mysql'),
-        ], ['%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s']);
+        ], ['%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s']);
 
         // Retención: 30 días y un máximo aproximado de 500 eventos.
         $wpdb->query("DELETE FROM {$logs_table} WHERE created < DATE_SUB(NOW(), INTERVAL 30 DAY)");
@@ -376,7 +405,7 @@ class SLR_Redirector {
             <table class="widefat striped">
                 <thead>
                     <tr>
-                        <th>Fecha</th><th>Evento</th><th>Origen</th><th>Idioma</th><th>Destino</th><th>Detalle</th>
+                        <th>Fecha</th><th>Evento</th><th>Request ID</th><th>Etapa</th><th>Origen</th><th>Idioma</th><th>Destino</th><th>Detalle</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -384,13 +413,15 @@ class SLR_Redirector {
                     <tr>
                         <td><?php echo esc_html($log->created); ?></td>
                         <td><strong><?php echo esc_html($log->event_type); ?></strong><br><span class="description"><?php echo esc_html($log->severity); ?></span></td>
+                        <td><code title="<?php echo esc_attr($log->request_id); ?>"><?php echo esc_html(substr($log->request_id, 0, 8)); ?></code></td>
+                        <td><?php echo esc_html($log->resolution_method ?: '—'); ?></td>
                         <td style="max-width:260px;overflow-wrap:anywhere;"><?php echo esc_html($log->source_url); ?></td>
                         <td><?php echo esc_html($log->source_lang ?: '—'); ?> → <?php echo esc_html($log->target_lang ?: '—'); ?></td>
                         <td style="max-width:260px;overflow-wrap:anywhere;"><?php echo esc_html($log->target_url ?: '—'); ?></td>
                         <td><?php echo esc_html($log->details); ?></td>
                     </tr>
                 <?php endforeach; else: ?>
-                    <tr><td colspan="6">Todavía no hay eventos registrados.</td></tr>
+                    <tr><td colspan="8">Todavía no hay eventos registrados.</td></tr>
                 <?php endif; ?>
                 </tbody>
             </table>
