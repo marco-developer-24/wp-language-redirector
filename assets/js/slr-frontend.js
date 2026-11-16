@@ -44,12 +44,14 @@
             $.post(slr.ajax_url, data, function(res){
                 if(res && res.success && res.data.url){
                     window.location.href = res.data.url;
-                } else {
-                    // fallback simple
-                    window.location.href = slr.home + lang + '/';
+                    return;
                 }
+
+                // Si el resolver no encuentra un destino, conservar el enlace original.
+                window.location.href = href;
             }).fail(function(){
-                window.location.href = slr.home + lang + '/';
+                // Si AJAX falla, no construir una URL potencialmente incorrecta.
+                window.location.href = href;
             });
         });
     });
