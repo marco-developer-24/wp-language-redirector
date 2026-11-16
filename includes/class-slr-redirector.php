@@ -86,6 +86,7 @@ class SLR_Redirector {
 
         $target_lang   = isset($_POST['lang']) ? sanitize_text_field($_POST['lang']) : '';
         $current_url   = isset($_POST['url']) ? esc_url_raw($_POST['url']) : '';
+        $source_lang   = $this->detect_language_from_url($current_url);
         $object_id     = isset($_POST['object_id']) ? intval($_POST['object_id']) : 0;
         $object_type   = isset($_POST['object_type']) ? sanitize_text_field($_POST['object_type']) : '';
 
@@ -100,7 +101,7 @@ class SLR_Redirector {
         if ($object_id) {
             $row = $wpdb->get_row($wpdb->prepare(
                 "SELECT * FROM {$table} WHERE source_id = %d AND source_lang = %s AND target_lang = %s AND active = 1 LIMIT 1",
-                $object_id, $this->detect_current_lang(), $target_lang
+                $object_id, $source_lang, $target_lang
             ));
             if ($row) {
                 wp_send_json_success(['url' => esc_url_raw($row->target_url)]);
@@ -115,7 +116,7 @@ class SLR_Redirector {
                 "SELECT * FROM {$table} WHERE (source_url = %s OR source_url = %s) AND source_lang = %s AND target_lang = %s AND active = 1 LIMIT 1",
                 $current_url,
                 $url_path,
-                $this->detect_current_lang(),
+                $source_lang,
                 $target_lang
             ));
             if (!empty($rows)) {
@@ -452,18 +453,36 @@ class SLR_Redirector {
     }
 
     /**
-     * Detectar idioma actual con WPM
+     * Detecta el idioma de origen a partir de la URL frontend enviada por el navegador.
+     *
+     * No utiliza REQUEST_URI ni wpm_get_language() en AJAX: ambos pueden representar
+     * el contexto de admin-ajax.php o el idioma por defecto, no la página visitada.
      */
-    private function detect_current_lang() {
-        if (function_exists('wpm_get_language')) {
-            return wpm_get_language();
+    private function detect_language_from_url($url) {
+        if (empty($url)) {
+            return '';
         }
-        // fallback: intentar por prefijo en URL
-        $home = home_url('/');
-        $path = trim(str_replace($home, '', (isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '')), '/');
-        $first = explode('/', $path)[0] ?? '';
-        if (in_array($first, ['es','en','fr'])) return $first;
-        return 'es';
+
+        $parsed = wp_parse_url($url);
+        if (!$parsed) {
+            return '';
+        }
+
+        if (!empty($parsed['query'])) {
+            parse_str($parsed['query'], $query);
+            if (!empty($query['lang'])) {
+                $query_lang = sanitize_key($query['lang']);
+                if (in_array($query_lang, ['es', 'en', 'fr'], true)) {
+                    return $query_lang;
+                }
+            }
+        }
+
+        $path = isset($parsed['path']) ? trim($parsed['path'], '/') : '';
+        $segments = $path === '' ? [] : explode('/', $path);
+        $first_segment = isset($segments[0]) ? sanitize_key($segments[0]) : '';
+
+        return in_array($first_segment, ['es', 'en', 'fr'], true) ? $first_segment : '';
     }
 
     /**
