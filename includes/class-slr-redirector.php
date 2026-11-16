@@ -140,9 +140,11 @@ class SLR_Redirector {
             }
         }
 
-        // 3) fallback: home del idioma (intenta usar prefijo si aplica)
-        $fallback = $this->build_fallback_home($target_lang);
-        wp_send_json_success(['url' => esc_url_raw($fallback)]);
+        // No inventar un destino si no se encontró una traducción verificable.
+        wp_send_json_error([
+            'code' => 'translation_not_found',
+            'message' => 'No se encontró un destino para el idioma solicitado.',
+        ]);
     }
 
     /**
