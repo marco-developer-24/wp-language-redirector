@@ -179,13 +179,48 @@ class SLR_Redirector {
             .slr-admin-wrap .widefat thead th { background: #f1f5f9; font-weight: 600; }
             .slr-admin-wrap .widefat td { vertical-align: middle; padding-top: 12px; padding-bottom: 12px; }
             .slr-admin-wrap .slr-url-cell { max-width: 300px; overflow-wrap: anywhere; }
-            .slr-admin-wrap .slr-language-tag { display: inline-block; min-width: 2.2em; padding: 4px 8px; border: 1px solid #d6e4f2; border-radius: 6px; background: #eff6fc; color: #245b89; font-size: 12px; font-weight: 600; line-height: 1.2; text-align: center; text-transform: uppercase; }
+            .slr-admin-wrap .slr-language-tag { display: inline-flex; align-items: center; gap: 7px; min-width: 2.2em; padding: 5px 9px; border: 1px solid #d6e4f2; border-radius: 7px; background: #eff6fc; color: #245b89; font-size: 12px; font-weight: 600; line-height: 1.2; text-align: center; text-transform: uppercase; white-space: nowrap; }
+            .slr-admin-wrap .slr-language-flag { font-size: 16px; line-height: 1; }
             .slr-admin-wrap .slr-status-tag { display: inline-block; padding: 4px 9px; border: 1px solid transparent; border-radius: 999px; font-size: 12px; font-weight: 600; line-height: 1.2; }
             .slr-admin-wrap .slr-status-tag.is-active { border-color: #b7e4c7; background: #edf8f0; color: #176b36; }
             .slr-admin-wrap .slr-status-tag.is-inactive { border-color: #d8dee8; background: #f3f4f6; color: #596579; }
             .slr-admin-wrap .widefat td:nth-child(2), .slr-admin-wrap .widefat td:nth-child(5) { overflow-wrap: anywhere; }
             @media(max-width:782px) { .slr-admin-panel { padding: 14px; } .slr-admin-panel .form-table th { width: auto; } .slr-admin-header { align-items:flex-start; flex-direction:column; padding:22px; } .slr-admin-stats { grid-template-columns:1fr; gap:10px; } .slr-admin-stat { padding:15px 17px; } }
         </style>';
+    }
+
+    /**
+     * Devuelve una bandera representativa para los códigos de idioma habituales.
+     * Los códigos regionales pueden definir una bandera específica.
+     */
+    private function get_language_flag($language) {
+        $language = strtolower(str_replace('_', '-', trim((string) $language)));
+        $flags = [
+            'es' => '🇪🇸', 'es-es' => '🇪🇸', 'es-mx' => '🇲🇽', 'es-ar' => '🇦🇷',
+            'en' => '🇬🇧', 'en-gb' => '🇬🇧', 'en-us' => '🇺🇸',
+            'fr' => '🇫🇷', 'fr-fr' => '🇫🇷', 'pt' => '🇵🇹', 'pt-br' => '🇧🇷',
+            'de' => '🇩🇪', 'it' => '🇮🇹', 'nl' => '🇳🇱', 'ja' => '🇯🇵',
+            'zh' => '🇨🇳', 'zh-cn' => '🇨🇳', 'zh-tw' => '🇹🇼',
+            'ru' => '🇷🇺', 'ar' => '🇸🇦', 'ko' => '🇰🇷',
+        ];
+
+        $base_language = strtok($language, '-');
+
+        return isset($flags[$language]) ? $flags[$language] : (isset($flags[$base_language]) ? $flags[$base_language] : '🌐');
+    }
+
+    /**
+     * Renderiza un código de idioma como etiqueta visual accesible.
+     */
+    private function render_language_tag($language) {
+        $language = (string) $language;
+        $flag = $this->get_language_flag($language);
+
+        return sprintf(
+            '<span class="slr-language-tag"><span class="slr-language-flag" aria-hidden="true">%1$s</span><span>%2$s</span></span>',
+            esc_html($flag),
+            esc_html($language)
+        );
     }
 
     /**
@@ -292,8 +327,8 @@ class SLR_Redirector {
                     <tr>
                         <td><?php echo intval($m->id); ?></td>
                         <td class="slr-url-cell"><?php echo esc_html($m->source_url ?: $m->source_id); ?></td>
-                        <td><span class="slr-language-tag"><?php echo esc_html($m->source_lang); ?></span></td>
-                        <td><span class="slr-language-tag"><?php echo esc_html($m->target_lang); ?></span></td>
+                        <td><?php echo $this->render_language_tag($m->source_lang); ?></td>
+                        <td><?php echo $this->render_language_tag($m->target_lang); ?></td>
                         <td class="slr-url-cell"><?php echo esc_url($m->target_url); ?></td>
                         <td><span class="slr-status-tag <?php echo $m->active ? 'is-active' : 'is-inactive'; ?>"><?php echo $m->active ? 'Activo' : 'Inactivo'; ?></span></td>
                         <td>
