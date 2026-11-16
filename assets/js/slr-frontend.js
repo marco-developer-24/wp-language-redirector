@@ -33,22 +33,32 @@
             var href = link.href || $(link).attr('href') || '';
             var lang = $(link).data('lang') || $(link).attr('data-lang') || null;
 
-            if (!href || link.protocol && !/^https?:$/.test(link.protocol)) {
+            if (!href) return;
+
+            var languageUrl;
+            try {
+                languageUrl = new URL(href, window.location.origin);
+            } catch(err) {
                 return;
             }
 
-            if (!lang && href) {
-                try {
-                    var u = new URL(href, window.location.origin);
-                    lang = u.searchParams.get('lang');
+            // The resolver only handles same-origin language navigation.
+            if (
+                !/^https?:$/.test(languageUrl.protocol) ||
+                languageUrl.origin !== window.location.origin
+            ) {
+                return;
+            }
 
-                    if (!lang) {
-                        var segs = u.pathname.split('/').filter(Boolean);
-                        if (segs.length && ['es', 'en', 'fr'].indexOf(segs[0]) !== -1) {
-                            lang = segs[0];
-                        }
+            if (!lang) {
+                lang = languageUrl.searchParams.get('lang');
+
+                if (!lang) {
+                    var segs = languageUrl.pathname.split('/').filter(Boolean);
+                    if (segs.length && ['es', 'en', 'fr'].indexOf(segs[0]) !== -1) {
+                        lang = segs[0];
                     }
-                } catch(err) {}
+                }
             }
 
             if (!lang) return;
