@@ -22,6 +22,9 @@ class SLR_Redirector {
         add_action('wp_ajax_nopriv_slr_get_redirect', [$this, 'ajax_get_redirect']);
         add_action('wp_ajax_slr_get_redirect', [$this, 'ajax_get_redirect']);
 
+        // Ensure the diagnostics table exists after plugin updates as well as activation.
+        add_action('init', [$this, 'maybe_create_logs_table'], 1);
+
         // Admin
         add_action('admin_menu', [$this, 'admin_menu']);
         add_action('admin_post_slr_clear_logs', [$this, 'admin_clear_logs']);
@@ -57,6 +60,7 @@ class SLR_Redirector {
 
         require_once ABSPATH . 'wp-admin/includes/upgrade.php';
         dbDelta($logs_sql);
+        update_option('slr_logs_db_version', '1');
 
         $sql = "CREATE TABLE {$table} (
             id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -75,6 +79,38 @@ class SLR_Redirector {
         ) {$charset_collate};";
 
         dbDelta($sql);
+    }
+
+    /**
+     * Crea la tabla de diagnósticos en instalaciones existentes tras actualizar el plugin.
+     */
+    public function maybe_create_logs_table() {
+        if ('1' === get_option('slr_logs_db_version')) {
+            return;
+        }
+
+        global $wpdb;
+        $logs_table = $wpdb->prefix . 'slr_redirect_logs';
+        $charset_collate = $wpdb->get_charset_collate();
+
+        $sql = "CREATE TABLE {$logs_table} (
+            id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+            event_type VARCHAR(64) NOT NULL,
+            severity VARCHAR(16) NOT NULL DEFAULT 'warning',
+            source_url VARCHAR(255) DEFAULT NULL,
+            source_lang VARCHAR(10) DEFAULT NULL,
+            target_lang VARCHAR(10) DEFAULT NULL,
+            target_url VARCHAR(255) DEFAULT NULL,
+            details TEXT DEFAULT NULL,
+            created DATETIME DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (id),
+            INDEX created_idx (created),
+            INDEX severity_idx (severity)
+        ) {$charset_collate};";
+
+        require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+        dbDelta($sql);
+        update_option('slr_logs_db_version', '1');
     }
 
     public static function deactivate() {
@@ -98,7 +134,7 @@ class SLR_Redirector {
      * AJAX handler: devuelve la URL destino según prioridad:
      * 1) mapping en tabla
      * 2) wpm_translate_object_id()
-     * 3) fallback home del idioma
+     * 3) registra una advertencia si no se encuentra destino
      */
     public function ajax_get_redirect() {
         check_ajax_referer('slr_nonce', 'nonce');
