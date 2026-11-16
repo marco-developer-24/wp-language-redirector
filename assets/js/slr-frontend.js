@@ -47,10 +47,12 @@
                     return;
                 }
 
-                // Si el resolver no encuentra un destino, conservar el enlace original.
+                // El servidor respondió, pero no pudo resolver un destino.
+                console.warn('[WP Language Redirector] No se encontró un destino para el idioma solicitado:', lang);
                 window.location.href = href;
-            }).fail(function(){
+            }).fail(function(xhr, textStatus, errorThrown){
                 // Si AJAX falla, no construir una URL potencialmente incorrecta.
+                console.warn('[WP Language Redirector] Falló la solicitud de resolución:', textStatus, errorThrown);
                 window.location.href = href;
             });
         });
