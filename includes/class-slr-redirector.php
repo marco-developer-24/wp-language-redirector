@@ -28,7 +28,6 @@ class SLR_Redirector {
         // Admin
         add_action('admin_menu', [$this, 'admin_menu']);
         add_action('admin_post_slr_clear_logs', [$this, 'admin_clear_logs']);
-        add_action('admin_head', [$this, 'admin_styles']);
         add_action('admin_post_slr_add_mapping', [$this, 'admin_add_mapping']);
         add_action('admin_post_slr_toggle_mapping', [$this, 'admin_toggle_mapping']);
         add_action('admin_post_slr_delete_mapping', [$this, 'admin_delete_mapping']);
@@ -245,51 +244,6 @@ class SLR_Redirector {
     }
 
     /**
-     * Estilos del panel de mappings, aislados a esta pantalla.
-     */
-    public function admin_styles() {
-        if (!isset($_GET['page']) || 'slr-mappings' !== sanitize_key(wp_unslash($_GET['page']))) {
-            return;
-        }
-        echo '<style>
-            .wrap.slr-admin-wrap { max-width: 1180px; }
-            .slr-admin-header { display:flex; align-items:flex-end; justify-content:space-between; gap:20px; margin:24px 0 22px; padding:28px 30px; border:1px solid #173b63; border-radius:14px; background:linear-gradient(120deg,#102a43 0%,#17466f 62%,#23649a 100%); color:#fff; box-shadow:0 8px 24px rgba(15,42,67,.14); }
-            .slr-admin-eyebrow { margin:0 0 8px; color:#b9d8f2; font-size:11px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; }
-            .slr-admin-header h1 { margin:0 0 7px; color:#fff; font-size:27px; font-weight:650; letter-spacing:-.025em; line-height:1.2; }
-            .slr-admin-description { margin:0; color:#d7e7f5; font-size:13px; }
-            .slr-admin-version { flex:0 0 auto; padding:7px 11px; border:1px solid rgba(255,255,255,.24); border-radius:999px; background:rgba(255,255,255,.1); color:#fff; font-size:12px; font-weight:600; }
-            .slr-admin-stats { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; margin:0 0 26px; }
-            .slr-admin-stat { min-width:0; padding:19px 21px; border:1px solid #dce3ec; border-radius:11px; background:#fff; box-shadow:0 2px 8px rgba(11,17,32,.035); }
-            .slr-admin-stat-label { display:block; margin-bottom:8px; color:#64748b; font-size:12px; font-weight:600; }
-            .slr-admin-stat-value { display:block; color:#172b43; font-size:27px; font-weight:700; line-height:1.1; letter-spacing:-.03em; font-variant-numeric:tabular-nums; }
-            .slr-admin-stat-note { display:block; margin-top:6px; color:#8492a6; font-size:11px; }
-            .slr-admin-stat.is-active .slr-admin-stat-value { color:#16804a; }
-            .slr-admin-stat.is-inactive .slr-admin-stat-value { color:#64748b; }
-            .slr-admin-wrap h2 { margin-top: 28px; padding-bottom: 10px; border-bottom: 1px solid #dce3ec; font-size: 17px; }
-            .slr-admin-wrap h2 { margin-top: 28px; padding-bottom: 10px; border-bottom: 1px solid #dce3ec; font-size: 17px; }
-            .slr-admin-panel { background: #fff; border: 1px solid #dce3ec; border-radius: 12px; padding: 22px 24px; margin: 18px 0 26px; box-shadow: 0 3px 12px rgba(11,17,32,.04); }
-            .slr-admin-panel .form-table th { width: 170px; padding: 16px 12px 16px 0; }
-            .slr-admin-panel .form-table td { padding: 12px 10px; }
-            .slr-admin-wrap input.regular-text { max-width: 100%; width: 440px; }
-            .slr-admin-wrap input[type=text], .slr-admin-wrap select { min-height: 36px; border-color: #cbd5e1; border-radius: 6px; }
-            .slr-admin-wrap input:focus, .slr-admin-wrap select:focus { border-color: #3B82C4; box-shadow: 0 0 0 1px #3B82C4; }
-            .slr-admin-wrap .button-primary { min-height: 38px; padding: 3px 16px; border-radius: 6px; background: #3B82C4; border-color: #3B82C4; }
-            .slr-admin-wrap .button-primary:hover { background: #286da9; border-color: #286da9; }
-            .slr-admin-wrap .widefat { overflow: hidden; border: 1px solid #dce3ec; border-radius: 8px; }
-            .slr-admin-wrap .widefat thead th { background: #f1f5f9; font-weight: 600; }
-            .slr-admin-wrap .widefat td { vertical-align: middle; padding-top: 12px; padding-bottom: 12px; }
-            .slr-admin-wrap .slr-url-cell { max-width: 300px; overflow-wrap: anywhere; }
-            .slr-admin-wrap .slr-language-tag { display: inline-flex; align-items: center; gap: 7px; min-width: 2.2em; padding: 5px 9px; border: 1px solid #d6e4f2; border-radius: 7px; background: #eff6fc; color: #245b89; font-size: 12px; font-weight: 600; line-height: 1.2; text-align: center; text-transform: uppercase; white-space: nowrap; }
-            .slr-admin-wrap .slr-language-flag { font-size: 16px; line-height: 1; }
-            .slr-admin-wrap .slr-status-tag { display: inline-block; padding: 4px 9px; border: 1px solid transparent; border-radius: 999px; font-size: 12px; font-weight: 600; line-height: 1.2; }
-            .slr-admin-wrap .slr-status-tag.is-active { border-color: #b7e4c7; background: #edf8f0; color: #176b36; }
-            .slr-admin-wrap .slr-status-tag.is-inactive { border-color: #d8dee8; background: #f3f4f6; color: #596579; }
-            .slr-admin-wrap .widefat td:nth-child(2), .slr-admin-wrap .widefat td:nth-child(5) { overflow-wrap: anywhere; }
-            @media(max-width:782px) { .slr-admin-panel { padding: 14px; } .slr-admin-panel .form-table th { width: auto; } .slr-admin-header { align-items:flex-start; flex-direction:column; padding:22px; } .slr-admin-stats { grid-template-columns:1fr; gap:10px; } .slr-admin-stat { padding:15px 17px; } }
-        </style>';
-    }
-
-    /**
      * Devuelve una bandera representativa para los códigos de idioma habituales.
      * Los códigos regionales pueden definir una bandera específica.
      */
@@ -464,28 +418,28 @@ class SLR_Redirector {
         <div class="wrap slr-admin-wrap">
             <header class="slr-admin-header">
                 <div>
-                    <p class="slr-admin-eyebrow">WP Language Redirector · Administration</p>
-                    <h1>Language mappings</h1>
-                    <p class="slr-admin-description">Manage language destinations and control which mapping rules are used.</p>
+                    <p class="slr-admin-eyebrow">WP Language Redirector · Administración</p>
+                    <h1>Mapeos de idiomas</h1>
+                    <p class="slr-admin-description">Administrá los destinos por idioma y controlá qué reglas participan en la resolución.</p>
                 </div>
-                <span class="slr-admin-version">Version <?php echo esc_html(SLR_VERSION); ?></span>
+                <span class="slr-admin-version">Versión <?php echo esc_html(SLR_VERSION); ?></span>
             </header>
 
-            <section class="slr-admin-stats" aria-label="Mapping overview">
+            <section class="slr-admin-stats" aria-label="Resumen de mapeos">
                 <div class="slr-admin-stat">
-                    <span class="slr-admin-stat-label">Total mappings</span>
+                    <span class="slr-admin-stat-label">Total de mapeos</span>
                     <strong class="slr-admin-stat-value"><?php echo esc_html(number_format_i18n($total_mappings)); ?></strong>
-                    <span class="slr-admin-stat-note">All saved rules</span>
+                    <span class="slr-admin-stat-note">Todas las reglas guardadas</span>
                 </div>
                 <div class="slr-admin-stat is-active">
-                    <span class="slr-admin-stat-label">Active</span>
+                    <span class="slr-admin-stat-label">Activos</span>
                     <strong class="slr-admin-stat-value"><?php echo esc_html(number_format_i18n($active_mappings)); ?></strong>
-                    <span class="slr-admin-stat-note">Available to the redirect resolver</span>
+                    <span class="slr-admin-stat-note">Disponibles para resolver destinos</span>
                 </div>
                 <div class="slr-admin-stat is-inactive">
-                    <span class="slr-admin-stat-label">Inactive</span>
+                    <span class="slr-admin-stat-label">Inactivos</span>
                     <strong class="slr-admin-stat-value"><?php echo esc_html(number_format_i18n($inactive_mappings)); ?></strong>
-                    <span class="slr-admin-stat-note">Saved but not used for redirects</span>
+                    <span class="slr-admin-stat-note">Guardados, pero no utilizados</span>
                 </div>
             </section>
 
@@ -495,7 +449,7 @@ class SLR_Redirector {
                 <div class="notice notice-error"><p><?php esc_html_e('No se pudo actualizar el estado del mapping.', 'schefferlii-lang-redirector'); ?></p></div>
             <?php endif; ?>
 
-            <h2>Añadir mapping</h2>
+            <h2>Crear un mapeo</h2>
             <div class="slr-admin-panel">
             <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
                 <?php wp_nonce_field('slr_add_mapping'); ?>
@@ -503,28 +457,33 @@ class SLR_Redirector {
                 <table class="form-table" role="presentation">
                     <tbody>
                     <tr>
-                        <th><label>Source URL (path completa)</label></th>
-                        <td><input name="source_url" type="text" class="regular-text" placeholder="https://tusitio.com/es/product-category/blusas-tops/" /></td>
+                        <th><label for="slr-source-url">URL de origen</label></th>
+                        <td><input id="slr-source-url" name="source_url" type="url" class="regular-text" placeholder="https://tusitio.com/es/categoria/" required />
+                            <p class="description">URL completa de la página actual, incluyendo el dominio y la ruta.</p></td>
                     </tr>
                     <tr>
-                        <th><label>Source Lang</label></th>
-                        <td><input name="source_lang" type="text" class="small-text" value="es" /></td>
+                        <th><label for="slr-source-lang">Idioma de origen</label></th>
+                        <td><input id="slr-source-lang" name="source_lang" type="text" class="small-text" value="es" maxlength="10" required />
+                            <p class="description">Código del idioma actual. Ejemplo: <code>es</code>.</p></td>
                     </tr>
                     <tr>
-                        <th><label>Target Lang</label></th>
-                        <td><input name="target_lang" type="text" class="small-text" value="en" /></td>
+                        <th><label for="slr-target-lang">Idioma de destino</label></th>
+                        <td><input id="slr-target-lang" name="target_lang" type="text" class="small-text" value="en" maxlength="10" required />
+                            <p class="description">Código del idioma al que se quiere dirigir. Ejemplo: <code>en</code>.</p></td>
                     </tr>
                     <tr>
-                        <th><label>Target URL</label></th>
-                        <td><input name="target_url" type="text" class="regular-text" placeholder="https://tusitio.com/en/product-category/blouses-tops/" /></td>
+                        <th><label for="slr-target-url">URL de destino</label></th>
+                        <td><input id="slr-target-url" name="target_url" type="url" class="regular-text" placeholder="https://tusitio.com/en/category/" required />
+                            <p class="description">URL completa que se utilizará cuando se solicite el idioma de destino.</p></td>
                     </tr>
                     <tr>
-                        <th><label>Redirect Type</label></th>
+                        <th><label for="slr-redirect-type">Tipo de redirección</label></th>
                         <td>
-                            <select name="redirect_type">
+                            <select id="slr-redirect-type" name="redirect_type">
                                 <option value="301">301 (Permanente)</option>
                                 <option value="302">302 (Temporal)</option>
                             </select>
+                            <p class="description">Se almacena como dato del mapeo. Actualmente no cambia el código HTTP de la navegación JavaScript.</p>
                         </td>
                     </tr>
                     </tbody>
@@ -533,11 +492,11 @@ class SLR_Redirector {
             </form>
             </div>
 
-            <h2>Mappings existentes</h2>
+            <h2>Mapeos existentes</h2>
             <div class="slr-admin-panel">
             <table class="widefat striped">
                 <thead><tr>
-                    <th>ID</th><th>Source</th><th>Source Lang</th><th>Target Lang</th><th>Target URL</th><th>Activo</th><th>Acciones</th>
+                    <th>ID</th><th>Origen</th><th>Idioma origen</th><th>Idioma destino</th><th>Destino</th><th>Estado</th><th>Acciones</th>
                 </tr></thead>
                 <tbody>
                 <?php if ($mappings): foreach($mappings as $m): ?>
@@ -564,7 +523,7 @@ class SLR_Redirector {
                         </td>
                     </tr>
                 <?php endforeach; else: ?>
-                    <tr><td colspan="7">No hay mappings aún.</td></tr>
+                    <tr><td colspan="7">Todavía no hay mapeos. Creá el primero con el formulario superior.</td></tr>
                 <?php endif; ?>
                 </tbody>
             </table>
