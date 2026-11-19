@@ -28,7 +28,6 @@ class SLR_Redirector {
         // Admin
         add_action('admin_menu', [$this, 'admin_menu']);
         add_action('admin_post_slr_clear_logs', [$this, 'admin_clear_logs']);
-        add_action('admin_head', [$this, 'admin_styles']);
         add_action('admin_post_slr_add_mapping', [$this, 'admin_add_mapping']);
         add_action('admin_post_slr_toggle_mapping', [$this, 'admin_toggle_mapping']);
         add_action('admin_post_slr_delete_mapping', [$this, 'admin_delete_mapping']);
