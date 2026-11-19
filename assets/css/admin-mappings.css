@@ -1,0 +1,252 @@
+/* WP Language Redirector: mapping administration */
+.wrap.slr-admin-wrap {
+    max-width: 1240px;
+    color: #1d2939;
+}
+
+.slr-admin-wrap .slr-admin-header {
+    align-items: center;
+    margin: 24px 0 20px;
+    padding: 30px 34px;
+    border: 1px solid #173b63;
+    border-radius: 14px;
+    background: linear-gradient(118deg, #102a43 0%, #17466f 68%, #23649a 100%);
+    box-shadow: 0 8px 24px rgba(15, 42, 67, .12);
+}
+
+.slr-admin-wrap .slr-admin-header h1 {
+    margin: 0 0 8px;
+    font-size: 28px;
+    font-weight: 650;
+    letter-spacing: -.025em;
+    line-height: 1.2;
+}
+
+.slr-admin-wrap .slr-admin-eyebrow {
+    margin-bottom: 9px;
+    font-size: 11px;
+    letter-spacing: .13em;
+}
+
+.slr-admin-wrap .slr-admin-description {
+    max-width: 620px;
+    font-size: 14px;
+    line-height: 1.55;
+}
+
+.slr-admin-wrap .slr-admin-version {
+    padding: 8px 12px;
+    font-size: 12px;
+}
+
+.slr-admin-wrap .slr-admin-stats {
+    gap: 16px;
+    margin-bottom: 30px;
+}
+
+.slr-admin-wrap .slr-admin-stat {
+    padding: 20px 22px;
+    border-color: #e2e8f0;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(16, 24, 40, .035);
+}
+
+.slr-admin-wrap .slr-admin-stat-value {
+    font-size: 30px;
+}
+
+.slr-admin-wrap h2 {
+    margin: 30px 0 14px;
+    padding: 0;
+    border: 0;
+    color: #172b43;
+    font-size: 18px;
+    font-weight: 650;
+    letter-spacing: -.015em;
+}
+
+.slr-admin-wrap .slr-admin-panel {
+    margin: 0 0 28px;
+    padding: 24px 26px;
+    border-color: #e2e8f0;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(16, 24, 40, .035);
+}
+
+.slr-admin-wrap .slr-admin-panel .form-table {
+    margin-top: 0;
+}
+
+.slr-admin-wrap .slr-admin-panel .form-table th {
+    width: 190px;
+    padding: 14px 18px 14px 0;
+    color: #344054;
+    font-weight: 600;
+}
+
+.slr-admin-wrap .slr-admin-panel .form-table td {
+    padding: 10px 0;
+}
+
+.slr-admin-wrap input.regular-text {
+    width: min(100%, 520px);
+    max-width: 100%;
+}
+
+.slr-admin-wrap input[type="text"],
+.slr-admin-wrap select {
+    min-height: 38px;
+    border-color: #cbd5e1;
+    border-radius: 6px;
+    box-shadow: none;
+}
+
+.slr-admin-wrap input[type="text"]:focus,
+.slr-admin-wrap select:focus {
+    border-color: #2271b1;
+    box-shadow: 0 0 0 1px #2271b1;
+}
+
+.slr-admin-wrap .button-primary {
+    min-height: 38px;
+    padding: 3px 17px;
+    border-radius: 6px;
+    background: #2271b1;
+    border-color: #2271b1;
+    font-weight: 600;
+}
+
+.slr-admin-wrap .button-primary:hover,
+.slr-admin-wrap .button-primary:focus {
+    background: #135e96;
+    border-color: #135e96;
+}
+
+.slr-admin-wrap .slr-admin-panel:has(.widefat) {
+    padding: 0;
+    overflow-x: auto;
+}
+
+.slr-admin-wrap .widefat {
+    min-width: 780px;
+    border: 0;
+    border-radius: 12px;
+    box-shadow: none;
+}
+
+.slr-admin-wrap .widefat thead th {
+    padding: 13px 14px;
+    background: #f8fafc;
+    color: #475467;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .045em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.slr-admin-wrap .widefat td {
+    padding: 14px;
+    color: #344054;
+    vertical-align: middle;
+}
+
+.slr-admin-wrap .widefat tbody tr:hover {
+    background: #f8fbff;
+}
+
+.slr-admin-wrap .widefat .slr-url-cell {
+    max-width: 280px;
+    overflow-wrap: anywhere;
+    line-height: 1.5;
+}
+
+.slr-admin-wrap .slr-language-tag {
+    padding: 6px 9px;
+    border-color: #d6e4f2;
+    border-radius: 7px;
+    background: #eff6fc;
+    color: #245b89;
+    font-size: 12px;
+}
+
+.slr-admin-wrap .slr-status-tag {
+    padding: 5px 10px;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.slr-admin-wrap .widefat form {
+    display: inline-flex !important;
+    margin: 2px 5px 2px 0;
+    vertical-align: middle;
+}
+
+.slr-admin-wrap .widefat .button {
+    min-height: 30px;
+    padding: 2px 10px;
+    border-radius: 5px;
+}
+
+.slr-admin-wrap .widefat .button.delete {
+    color: #b42318;
+}
+
+@media screen and (max-width: 782px) {
+    .wrap.slr-admin-wrap {
+        margin-right: 12px;
+    }
+
+    .slr-admin-wrap .slr-admin-header {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 16px;
+        padding: 23px;
+    }
+
+    .slr-admin-wrap .slr-admin-header h1 {
+        font-size: 24px;
+    }
+
+    .slr-admin-wrap .slr-admin-stats {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    .slr-admin-wrap .slr-admin-stat {
+        padding: 16px 18px;
+    }
+
+    .slr-admin-wrap .slr-admin-panel {
+        padding: 16px;
+    }
+
+    .slr-admin-wrap .slr-admin-panel:has(.widefat) {
+        padding: 0;
+    }
+
+    .slr-admin-wrap .slr-admin-panel .form-table th,
+    .slr-admin-wrap .slr-admin-panel .form-table td {
+        display: block;
+        width: auto;
+        padding: 8px 0;
+    }
+
+    .slr-admin-wrap .slr-admin-panel .form-table th {
+        padding-bottom: 2px;
+    }
+
+    .slr-admin-wrap input.regular-text {
+        width: 100%;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .slr-admin-wrap .slr-admin-header {
+        padding: 20px;
+    }
+
+    .slr-admin-wrap .slr-admin-stat-value {
+        font-size: 26px;
+    }
+}
