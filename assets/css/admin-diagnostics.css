@@ -1,0 +1,182 @@
+/* WP Language Redirector: diagnostics administration */
+body.settings_page_slr-diagnostics .wrap {
+    max-width: 1440px;
+    color: #1d2939;
+}
+
+body.settings_page_slr-diagnostics .wrap > h1 {
+    margin: 24px 0 18px;
+    padding: 29px 32px;
+    border: 1px solid #173b63;
+    border-radius: 14px;
+    background: linear-gradient(118deg, #102a43 0%, #17466f 68%, #23649a 100%);
+    box-shadow: 0 8px 24px rgba(15, 42, 67, .12);
+    color: #fff;
+    font-size: 27px;
+    font-weight: 650;
+    letter-spacing: -.025em;
+    line-height: 1.25;
+}
+
+body.settings_page_slr-diagnostics .wrap > p {
+    max-width: 900px;
+    color: #667085;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+body.settings_page_slr-diagnostics .wrap > p:nth-of-type(2) {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin: 8px 0 18px;
+    padding: 12px 16px;
+    border: 1px solid #dce6f0;
+    border-radius: 9px;
+    background: #f8fafc;
+    color: #344054;
+    font-size: 13px;
+}
+
+body.settings_page_slr-diagnostics .wrap > p:nth-of-type(2) strong {
+    color: #173b63;
+    font-size: 17px;
+    font-variant-numeric: tabular-nums;
+}
+
+body.settings_page_slr-diagnostics .wrap > form {
+    display: flex;
+    justify-content: flex-end;
+    margin: 0 0 12px !important;
+}
+
+body.settings_page_slr-diagnostics .wrap > form .button {
+    min-height: 36px;
+    padding: 2px 14px;
+    border-color: #d0d5dd;
+    border-radius: 6px;
+    color: #b42318;
+    font-weight: 600;
+}
+
+body.settings_page_slr-diagnostics .wrap > form .button:hover,
+body.settings_page_slr-diagnostics .wrap > form .button:focus {
+    border-color: #fecdca;
+    background: #fef3f2;
+    color: #912018;
+}
+
+body.settings_page_slr-diagnostics .widefat {
+    min-width: 1120px;
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+    border-radius: 11px;
+    background: #fff;
+    box-shadow: 0 2px 10px rgba(16, 24, 40, .035);
+}
+
+body.settings_page_slr-diagnostics .widefat thead th {
+    padding: 13px 12px;
+    background: #f8fafc;
+    color: #475467;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+body.settings_page_slr-diagnostics .widefat tbody td {
+    padding: 13px 12px;
+    color: #344054;
+    font-size: 12px;
+    line-height: 1.55;
+    vertical-align: top;
+}
+
+body.settings_page_slr-diagnostics .widefat tbody tr:hover {
+    background: #f8fbff;
+}
+
+body.settings_page_slr-diagnostics .widefat td:nth-child(1) {
+    min-width: 132px;
+    color: #667085;
+    white-space: nowrap;
+}
+
+body.settings_page_slr-diagnostics .widefat td:nth-child(2) {
+    min-width: 125px;
+}
+
+body.settings_page_slr-diagnostics .widefat td:nth-child(2) strong {
+    color: #172b43;
+    overflow-wrap: anywhere;
+}
+
+body.settings_page_slr-diagnostics .widefat td:nth-child(2) .description {
+    display: inline-block;
+    margin-top: 4px;
+    padding: 2px 7px;
+    border-radius: 999px;
+    background: #fff7ed;
+    color: #9a3412;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1.5;
+}
+
+body.settings_page_slr-diagnostics .widefat td:nth-child(3) {
+    min-width: 86px;
+}
+
+body.settings_page_slr-diagnostics .widefat td:nth-child(3) code {
+    padding: 3px 5px;
+    border: 1px solid #e2e8f0;
+    border-radius: 5px;
+    background: #f8fafc;
+    color: #475467;
+    font-size: 11px;
+}
+
+body.settings_page_slr-diagnostics .widefat td:nth-child(5),
+body.settings_page_slr-diagnostics .widefat td:nth-child(7) {
+    min-width: 180px;
+    max-width: 260px;
+    overflow-wrap: anywhere;
+}
+
+body.settings_page_slr-diagnostics .widefat td:nth-child(6) {
+    min-width: 90px;
+    white-space: nowrap;
+}
+
+body.settings_page_slr-diagnostics .widefat td:nth-child(8) {
+    min-width: 220px;
+    max-width: 360px;
+    overflow-wrap: anywhere;
+}
+
+@media screen and (max-width: 782px) {
+    body.settings_page_slr-diagnostics .wrap {
+        margin-right: 12px;
+    }
+
+    body.settings_page_slr-diagnostics .wrap > h1 {
+        padding: 22px;
+        font-size: 23px;
+    }
+
+    body.settings_page_slr-diagnostics .wrap > p:nth-of-type(2) {
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+
+    body.settings_page_slr-diagnostics .wrap > form {
+        justify-content: flex-start;
+    }
+
+    body.settings_page_slr-diagnostics .widefat {
+        display: block;
+        overflow-x: auto;
+    }
+}
