@@ -19,6 +19,7 @@
 }
 
 .slr-admin-wrap .slr-admin-header h1 {
+    color: #fff;
     margin: 0 0 8px;
     font-size: 28px;
     font-weight: 650;
@@ -43,6 +44,8 @@
 }
 
 .slr-admin-wrap .slr-admin-description {
+    margin: 0;
+    color: #d7e7f5;
     max-width: 620px;
     font-size: 14px;
     line-height: 1.55;
@@ -92,8 +95,35 @@
     font-size: 12px;
 }
 
+.slr-admin-wrap .slr-admin-stat-label {
+    display: block;
+    margin-bottom: 8px;
+    color: #667085;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.slr-admin-wrap .slr-admin-stat-note {
+    color: #8492a6;
+    font-size: 11px;
+}
+
 .slr-admin-wrap .slr-admin-stat-value {
+    display: block;
+    color: #172b43;
     font-size: 30px;
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -.03em;
+    font-variant-numeric: tabular-nums;
+}
+
+.slr-admin-wrap .slr-admin-stat.is-active .slr-admin-stat-value {
+    color: #16804a;
+}
+
+.slr-admin-wrap .slr-admin-stat.is-inactive .slr-admin-stat-value {
+    color: #64748b;
 }
 
 .slr-admin-wrap h2 {
@@ -107,6 +137,8 @@
 }
 
 .slr-admin-wrap .slr-admin-panel {
+    background: #fff;
+    border: 1px solid #e2e8f0;
     margin: 0 0 28px;
     padding: 24px 26px;
     border-color: #e2e8f0;
@@ -142,7 +174,7 @@
     box-shadow: none;
 }
 
-.slr-admin-wrap input[type="text"]:focus,
+.slr-admin-wrap input:focus,
 .slr-admin-wrap select:focus {
     border-color: #2271b1;
     box-shadow: 0 0 0 1px #2271b1;
@@ -202,7 +234,22 @@
     line-height: 1.5;
 }
 
+.slr-admin-wrap .slr-language-flag {
+    font-size: 16px;
+    line-height: 1;
+}
+
 .slr-admin-wrap .slr-language-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    min-width: 2.2em;
+    font-weight: 600;
+    line-height: 1.2;
+    text-align: center;
+    text-transform: uppercase;
+    white-space: nowrap;
+    border: 1px solid #d6e4f2;
     padding: 6px 9px;
     border-color: #d6e4f2;
     border-radius: 7px;
@@ -211,7 +258,23 @@
     font-size: 12px;
 }
 
+.slr-admin-wrap .slr-status-tag.is-active {
+    border-color: #b7e4c7;
+    background: #edf8f0;
+    color: #176b36;
+}
+
+.slr-admin-wrap .slr-status-tag.is-inactive {
+    border-color: #d8dee8;
+    background: #f3f4f6;
+    color: #596579;
+}
+
 .slr-admin-wrap .slr-status-tag {
+    display: inline-block;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    line-height: 1.2;
     padding: 5px 10px;
     font-size: 11px;
     font-weight: 700;
