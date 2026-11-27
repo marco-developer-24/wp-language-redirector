@@ -5,6 +5,10 @@
 }
 
 .slr-admin-wrap .slr-admin-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 24px;
+    color: #fff;
     align-items: center;
     margin: 24px 0 20px;
     padding: 30px 34px;
@@ -23,6 +27,16 @@
 }
 
 .slr-admin-wrap .slr-admin-eyebrow {
+    margin: 0 0 9px;
+    color: #b9d5ed;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .13em;
+    text-transform: uppercase;
+}
+
+/* Keep the original visual hierarchy after extracting the inline admin styles. */
+.slr-admin-wrap .slr-admin-eyebrow {
     margin-bottom: 9px;
     font-size: 11px;
     letter-spacing: .13em;
@@ -35,20 +49,47 @@
 }
 
 .slr-admin-wrap .slr-admin-version {
+    display: inline-flex;
+    align-items: center;
+    flex: 0 0 auto;
+    border: 1px solid rgba(255, 255, 255, .28);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, .1);
+    color: #fff;
     padding: 8px 12px;
     font-size: 12px;
 }
 
 .slr-admin-wrap .slr-admin-stats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 16px;
     margin-bottom: 30px;
 }
 
 .slr-admin-wrap .slr-admin-stat {
+    min-width: 0;
+    background: #fff;
+    border: 1px solid #e2e8f0;
     padding: 20px 22px;
     border-color: #e2e8f0;
     border-radius: 12px;
     box-shadow: 0 2px 8px rgba(16, 24, 40, .035);
+}
+
+.slr-admin-wrap .slr-admin-stat-label {
+    display: block;
+    margin-bottom: 8px;
+    color: #667085;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.slr-admin-wrap .slr-admin-stat-note {
+    display: block;
+    margin-top: 6px;
+    color: #667085;
+    font-size: 12px;
 }
 
 .slr-admin-wrap .slr-admin-stat-value {
