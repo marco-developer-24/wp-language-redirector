@@ -19,6 +19,13 @@ require_once SLR_PATH . 'includes/class-slr-redirector.php';
 register_activation_hook(__FILE__, array('SLR_Redirector', 'activate'));
 register_deactivation_hook(__FILE__, array('SLR_Redirector', 'deactivate'));
 
+/**
+ * Inicializa los hooks del plugin después de cargar los plugins activos.
+ */
+add_action('plugins_loaded', function() {
+    SLR_Redirector::instance();
+});
+
 add_action('admin_enqueue_scripts', function($hook_suffix) {
     if ('settings_page_slr-mappings' !== $hook_suffix) {
         return;
