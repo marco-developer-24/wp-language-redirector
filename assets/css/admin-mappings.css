@@ -35,6 +35,13 @@
     text-transform: uppercase;
 }
 
+/* Keep the original visual hierarchy after extracting the inline admin styles. */
+.slr-admin-wrap .slr-admin-eyebrow {
+    margin-bottom: 9px;
+    font-size: 11px;
+    letter-spacing: .13em;
+}
+
 .slr-admin-wrap .slr-admin-description {
     max-width: 620px;
     font-size: 14px;
