@@ -36,13 +36,6 @@
     text-transform: uppercase;
 }
 
-/* Keep the original visual hierarchy after extracting the inline admin styles. */
-.slr-admin-wrap .slr-admin-eyebrow {
-    margin-bottom: 9px;
-    font-size: 11px;
-    letter-spacing: .13em;
-}
-
 .slr-admin-wrap .slr-admin-description {
     margin: 0;
     color: #d7e7f5;
@@ -93,14 +86,6 @@
     margin-top: 6px;
     color: #667085;
     font-size: 12px;
-}
-
-.slr-admin-wrap .slr-admin-stat-label {
-    display: block;
-    margin-bottom: 8px;
-    color: #667085;
-    font-size: 12px;
-    font-weight: 600;
 }
 
 .slr-admin-wrap .slr-admin-stat-note {
