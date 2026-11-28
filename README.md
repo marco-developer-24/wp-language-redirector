@@ -10,7 +10,7 @@
 
 </div>
 
-Plugin de WordPress para resolver la URL de destino al cambiar de idioma desde un selector compatible con WP Multilang. Permite definir mappings manuales y utiliza helpers de WP Multilang cuando están disponibles.
+Plugin de WordPress para resolver la URL de destino al cambiar de idioma desde un selector compatible con WP Multilang. Permite definir mappings manuales y, cuando se cumplen las condiciones necesarias, utiliza `wpm_translate_object_id()` para resolver objetos traducidos.
 
 > Proyecto específico de integración. Revisá los selectores, idiomas y estructura de URLs de tu sitio antes de instalarlo en producción.
 
@@ -20,6 +20,7 @@ Plugin de WordPress para resolver la URL de destino al cambiar de idioma desde u
 - [Requisitos e integración](#requisitos-e-integración)
 - [Instalación](#instalación)
 - [Configurar mappings manuales](#configurar-mappings-manuales)
+- [Comportamiento cuando no se encuentra un destino](#comportamiento-cuando-no-se-encuentra-un-destino)
 - [Checklist de validación](#checklist-de-validación)
 - [Limitaciones conocidas](#limitaciones-conocidas)
 - [Seguridad y producción](#seguridad-y-producción)
@@ -27,14 +28,13 @@ Plugin de WordPress para resolver la URL de destino al cambiar de idioma desde u
 
 ## Qué hace
 
-Cuando un visitante hace clic en un enlace de idioma compatible, el JavaScript del plugin consulta WordPress mediante AJAX para obtener el destino. La resolución sigue este orden:
+Cuando un visitante hace clic en un enlace de idioma compatible, el JavaScript del plugin consulta WordPress mediante AJAX para obtener el destino. La resolución del servidor sigue este orden:
 
 1. **Mapping manual por objeto:** busca un mapping activo que coincida con el ID de objeto, el idioma de origen y el idioma destino.
 2. **Mapping manual por URL:** si no encuentra uno por ID, intenta una coincidencia de URL de origen.
-3. **WP Multilang:** si está disponible y se recibió un ID de objeto, intenta resolver el objeto traducido con `wpm_translate_object_id()`.
-4. **Fallback de idioma:** si no hay coincidencia, utiliza la URL de inicio del idioma, mediante `wpm_get_language_url()` cuando está disponible o el prefijo habitual `/<idioma>/`.
+3. **WP Multilang:** si la función `wpm_translate_object_id()` está disponible y se recibió un ID de objeto, intenta resolver el objeto traducido. Para categorías de producto utiliza `get_term_link()`; para los demás objetos utiliza `get_permalink()`.
 
-Los mappings manuales tienen prioridad sobre la traducción automática.
+Los mappings manuales tienen prioridad sobre la resolución automática mediante WP Multilang.
 
 ## Requisitos e integración
 
@@ -43,11 +43,15 @@ Los mappings manuales tienen prioridad sobre la traducción automática.
 - Un selector de idiomas cuyos enlaces coincidan con alguno de estos selectores:
   - `#wpm-languages a`
   - `a[data-wpm-lang]`
-- Para la resolución automática de objetos traducidos, WP Multilang y sus funciones correspondientes.
+- Para la resolución automática de objetos traducidos, WP Multilang y su función `wpm_translate_object_id()`.
 
-El script intenta detectar el idioma desde `data-lang`, el parámetro `lang` de la URL o el primer segmento de ruta cuando es `es`, `en` o `fr`. Si no puede detectar el idioma, deja que el enlace funcione normalmente.
+### Detección de idiomas y contenido
 
-El ID y el tipo del contenido actual son opcionales: el script intenta leerlos desde `data-post-id` y `data-post-type` del elemento `body`.
+El JavaScript obtiene el idioma destino desde el atributo `data-lang` del enlace o, si no está disponible, desde la URL del enlace. Para esta última detección contempla el parámetro `lang` y los prefijos `/es/`, `/en/` y `/fr/`. Si no puede determinar el idioma destino, no intercepta el enlace y deja que el navegador lo siga normalmente.
+
+El servidor determina el idioma de origen a partir de la URL actual enviada por el navegador. Reconoce el parámetro `lang` o el primer segmento de ruta cuando es `es`, `en` o `fr`. **No consulta el idioma mediante `wpm_get_language()` ni asigna `es` como valor predeterminado.** Si no puede identificar el idioma de origen, la solicitud de resolución falla y el frontend conserva el enlace original.
+
+El ID y el tipo del contenido actual son opcionales: el script intenta leerlos desde `data-post-id` y `data-post-type` del elemento `body`. Sin un ID de objeto, siguen disponibles los mappings manuales por URL; la resolución automática mediante `wpm_translate_object_id()` no se ejecuta.
 
 ## Instalación
 
@@ -75,24 +79,35 @@ Los mappings se guardan como activos y pueden eliminarse desde la tabla de mappi
 
 **Nota de implementación:** aunque el formulario guarda el campo `redirect_type`, el flujo actual de frontend navega mediante JavaScript y no aplica ese código HTTP como respuesta de redirección. No interpretes la selección 301/302 como una redirección HTTP real.
 
+## Comportamiento cuando no se encuentra un destino
+
+Si no se encuentra un mapping ni una traducción mediante WP Multilang, el servidor registra el evento `translation_not_found` y responde con un error. En ese caso, el frontend muestra una advertencia en la consola del navegador y navega al `href` original del enlace seleccionado.
+
+Si la solicitud AJAX falla —por ejemplo, por un error de red o una respuesta no válida—, el frontend también registra una advertencia en la consola y conserva el enlace original.
+
+El plugin **no redirige automáticamente a la página de inicio del idioma destino** cuando no encuentra una traducción. Tampoco sustituye un idioma de origen no identificado por un idioma predeterminado.
+
 ## Checklist de validación
 
 - [ ] El selector de idiomas coincide con `#wpm-languages a` o `a[data-wpm-lang]`.
-- [ ] El idioma se detecta correctamente desde el atributo o la URL.
+- [ ] El idioma destino se detecta correctamente desde `data-lang` o la URL del enlace.
+- [ ] El idioma de origen se detecta correctamente desde el parámetro `lang` o el prefijo de la URL actual.
 - [ ] Un mapping manual por URL lleva al destino esperado.
 - [ ] En contenidos con ID disponible, se verifica la prioridad del mapping por objeto.
-- [ ] Con WP Multilang activo, se prueba la resolución de una traducción existente.
-- [ ] Sin mapping ni traducción, se comprueba el fallback del idioma.
-- [ ] Si AJAX falla, se comprueba el fallback simple del frontend.
+- [ ] Con WP Multilang activo y un ID de objeto disponible, se prueba la resolución de una traducción existente.
+- [ ] Sin mapping ni traducción, se conserva el enlace original del selector.
+- [ ] Si no se puede detectar el idioma de origen, se conserva el enlace original.
+- [ ] Si AJAX falla, se conserva el enlace original.
 - [ ] Se prueba una página sin traducción y una categoría de producto.
 - [ ] Se revisan la consola del navegador y los logs de PHP.
 
 ## Limitaciones conocidas
 
 - Los selectores del frontend están definidos en el JavaScript; otros selectores requieren adaptar el código.
-- La detección por prefijo contempla actualmente `es`, `en` y `fr`.
-- La detección del idioma de origen depende de WP Multilang o del prefijo de URL; si no puede determinarlo, utiliza `es` como valor por defecto.
-- El fallback presupone una estructura de idioma por prefijo, salvo que WP Multilang proporcione su helper.
+- La detección de idiomas contempla actualmente `es`, `en` y `fr`.
+- El idioma de origen se detecta desde la URL enviada por el navegador; no se consulta el contexto de idioma de WP Multilang ni se utiliza un idioma predeterminado.
+- La resolución automática mediante WP Multilang requiere que `wpm_translate_object_id()` esté disponible y que el frontend proporcione un ID de objeto.
+- Si no se encuentra un destino, el comportamiento es conservar el enlace original; no existe un fallback automático a la página de inicio del idioma.
 - La interfaz permite crear y eliminar mappings; no incluye edición de registros.
 - El campo 301/302 se almacena, pero no controla el tipo de respuesta HTTP en la implementación actual.
 
